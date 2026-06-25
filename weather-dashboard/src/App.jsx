@@ -1,25 +1,25 @@
 import { useState } from "react";
 import "./App.css";
 
+function getWeatherInfo(code) {
+  if (code === 0) return { icon: "☀️", text: "Clear Sky" };
+  if (code === 1 || code === 2) return { icon: "⛅", text: "Partly Cloudy" };
+  if (code === 3) return { icon: "☁️", text: "Overcast" };
+  if (code === 45 || code === 48) return { icon: "🌫️", text: "Foggy" };
+  if (code >= 51 && code <= 67) return { icon: "🌧️", text: "Rainy" };
+  if (code >= 71 && code <= 77) return { icon: "❄️", text: "Snowy" };
+  if (code === 80 || code === 81 || code === 82) return { icon: "🌧️", text: "Rain Showers" };
+  if (code === 85 || code === 86) return { icon: "❄️", text: "Snow Showers" };
+  if (code >= 95 && code <= 99) return { icon: "⛈️", text: "Thunderstorm" };
+
+  return { icon: "🌍", text: "Unknown" };
+}
+
 function App() {
   const [city, setCity] = useState("");
   const [weather, setWeather] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-
-  function getWeatherInfo(code) {
-    if (code === 0) return { icon: "☀️", text: "Clear Sky" };
-    if (code === 1 || code === 2) return { icon: "⛅", text: "Partly Cloudy" };
-    if (code === 3) return { icon: "☁️", text: "Overcast" };
-    if (code === 45 || code === 48) return { icon: "🌫️", text: "Foggy" };
-    if (code >= 51 && code <= 67) return { icon: "🌧️", text: "Rainy" };
-    if (code >= 71 && code <= 77) return { icon: "❄️", text: "Snowy" };
-    if (code === 80 || code === 81 || code === 82) return { icon: "🌧️", text: "Rain Showers" };
-    if (code === 85 || code === 86) return { icon: "❄️", text: "Snow Showers" };
-    if (code >= 95 && code <= 99) return { icon: "⛈️", text: "Thunderstorm" };
-
-    return { icon: "🌍", text: "Unknown" };
-  }
 
   async function getWeather() {
     if (!city.trim()) return;
@@ -66,6 +66,7 @@ function App() {
   return (
     <div className="container">
       <h1>Weather</h1>
+      <p className="tagline">Type a city and state to get the latest forecast.</p>
 
       <div className="search-wrapper">
         <input

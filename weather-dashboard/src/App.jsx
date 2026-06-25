@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "./App.css";
+import bgImage from "../image.jpg";
 
 function getWeatherInfo(code) {
   if (code === 0) return { icon: "☀️", text: "Clear Sky" };
@@ -15,11 +16,43 @@ function getWeatherInfo(code) {
   return { icon: "🌍", text: "Unknown" };
 }
 
+function celsiusToFahrenheit(celsius) {
+  return Math.round((celsius * 9) / 5 + 32);
+}
+
+function formatLocation(location) {
+  const parts = [location.name];
+  if (location.country_code === "US" && location.admin1) {
+    parts.push(location.admin1);
+  }
+  if (location.country) {
+    parts.push(location.country);
+  }
+  return parts.filter(Boolean).join(", ");
+}
+
 function App() {
   const [city, setCity] = useState("");
   const [weather, setWeather] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const overlay = "linear-gradient(180deg, rgba(10, 18, 45, 0.72), rgba(14, 28, 70, 0.72))";
+    document.documentElement.style.backgroundImage = `${overlay}, url('${bgImage}')`;
+    document.documentElement.style.backgroundSize = "cover";
+    document.documentElement.style.backgroundPosition = "center";
+    document.documentElement.style.backgroundRepeat = "no-repeat";
+    document.documentElement.style.backgroundAttachment = "fixed";
+
+    return () => {
+      document.documentElement.style.backgroundImage = "";
+      document.documentElement.style.backgroundSize = "";
+      document.documentElement.style.backgroundPosition = "";
+      document.documentElement.style.backgroundRepeat = "";
+      document.documentElement.style.backgroundAttachment = "";
+    };
+  }, []);
 
   async function getWeather() {
     if (!city.trim()) return;
@@ -50,8 +83,8 @@ function App() {
       const weatherData = await weatherResponse.json();
 
       setWeather({
-        city: location.name,
-        temperature: weatherData.current.temperature_2m,
+        displayName: formatLocation(location),
+        temperature: celsiusToFahrenheit(weatherData.current.temperature_2m),
         humidity: weatherData.current.relative_humidity_2m,
         wind: weatherData.current.wind_speed_10m,
         code: weatherData.current.weather_code,
@@ -71,7 +104,7 @@ function App() {
       <div className="search-wrapper">
         <input
           type="text"
-          placeholder="Enter a city"
+          placeholder="Enter a city, state or city and country"
           value={city}
           onChange={(e) => setCity(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && getWeather()}
@@ -86,7 +119,7 @@ function App() {
 
       {weather && (
         <div className="card">
-          <h2>{weather.city}</h2>
+          <h2>{weather.displayName}</h2>
 
           <div className="icon">
             {getWeatherInfo(weather.code).icon}
@@ -97,7 +130,7 @@ function App() {
           </p>
 
           <div className="temperature-display">
-            {weather.temperature}°C
+            {weather.temperature}°F
           </div>
 
           <p>

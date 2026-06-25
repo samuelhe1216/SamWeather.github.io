@@ -6,9 +6,7 @@
 
 html {
   min-height: 100vh;
-  background: radial-gradient(circle at top left, rgba(158, 183, 255, 0.24), transparent 18%),
-    radial-gradient(circle at bottom right, rgba(113, 220, 255, 0.18), transparent 16%),
-    linear-gradient(180deg, #0c1637 0%, #111f4f 35%, #2a3b7b 100%);
+  background: none;
 }
 
 body {
@@ -51,7 +49,9 @@ body::after {
 
 .container {
   text-align: center;
-  width: min(100%, 620px);
+  width: min(100%, 680px);
+  max-width: 680px;
+  margin: 0 auto;
   min-height: 100vh;
   padding: 40px 24px;
   display: flex;
@@ -117,8 +117,9 @@ input {
   padding: 18px 22px;
   font-size: 1rem;
   border-radius: 999px;
-  background: rgba(19, 45, 96, 0.88);
-  color: #4081d6;
+  background: rgba(16, 38, 86, 0.92);
+  color: #5d8dff;
+  caret-color: #5d8dff;
   backdrop-filter: blur(18px);
   border: 1px solid rgba(255, 255, 255, 0.16);
   transition: all 0.3s ease;
@@ -127,7 +128,13 @@ input {
 }
 
 input::placeholder {
-  color: rgba(255, 255, 255, 0.68);
+  color: rgba(189, 205, 255, 0.82);
+}
+
+input:hover,
+.search-wrapper:hover input {
+  cursor: text;
+  caret-color: #5d8dff;
 }
 
 input:focus {
@@ -142,7 +149,7 @@ button {
   border: none;
   border-radius: 999px;
   background: linear-gradient(135deg, #2c46b2 0%, #1e2c84 100%);
-  color: #ffffff;
+  color: #eef7ff;
   font-weight: 800;
   font-size: 1rem;
   cursor: pointer;
@@ -201,7 +208,7 @@ button:active {
 
 .card h2 {
   font-size: 1.9rem;
-  color: #f8fbff;
+  color: #68a2ec;
   margin-bottom: 18px;
   font-weight: 700;
   letter-spacing: -0.3px;

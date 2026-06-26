@@ -31,6 +31,25 @@ function formatLocation(location) {
   return parts.filter(Boolean).join(", ");
 }
 
+function isCountryResult(location, query) {
+  if (!(location?.name && location?.country)) {
+    return false;
+  }
+
+  const normalizedQuery = query.trim().toLowerCase();
+  const normalizedName = location.name.trim().toLowerCase();
+  const normalizedCountry = location.country.trim().toLowerCase();
+
+  return (
+    (normalizedName === normalizedCountry && !location.admin1) ||
+    normalizedQuery === normalizedCountry
+  );
+}
+
+function getMapUrl(latitude, longitude) {
+  return `https://staticmap.openstreetmap.de/staticmap.php?center=${latitude},${longitude}&zoom=10&size=620x260&markers=${latitude},${longitude},red-pushpin`;
+}
+
 function App() {
   const [city, setCity] = useState("");
   const [weather, setWeather] = useState(null);
@@ -69,12 +88,18 @@ function App() {
       const geoData = await geoResponse.json();
 
       if (!geoData.results) {
-        setError("City not found.");
+        setError("Must be a real CITY you donut");
         setLoading(false);
         return;
       }
 
       const location = geoData.results[0];
+
+      if (isCountryResult(location, city)) {
+        setError("Must be a real CITY you donut");
+        setLoading(false);
+        return;
+      }
 
       const weatherResponse = await fetch(
         `https://api.open-meteo.com/v1/forecast?latitude=${location.latitude}&longitude=${location.longitude}&current=temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code`
@@ -84,6 +109,16 @@ function App() {
 
       setWeather({
         displayName: formatLocation(location),
+        country: location.country,
+        countryCode: location.country_code,
+        region: location.admin1 || location.country,
+        locality: location.admin2 || location.admin1 || "N/A",
+        timezone: location.timezone || "Unknown",
+        latitude: location.latitude,
+        longitude: location.longitude,
+        elevation: location.elevation ?? "N/A",
+        population: location.population ?? "N/A",
+        mapUrl: getMapUrl(location.latitude, location.longitude),
         temperature: celsiusToFahrenheit(weatherData.current.temperature_2m),
         humidity: weatherData.current.relative_humidity_2m,
         wind: weatherData.current.wind_speed_10m,
@@ -120,26 +155,55 @@ function App() {
       {weather && (
         <div className="card">
           <h2>{weather.displayName}</h2>
+          <p className="subheading">
+            {weather.locality ? `${weather.locality}, ` : ""}
+            {weather.region} · {weather.country} · {weather.timezone}
+          </p>
 
-          <div className="icon">
-            {getWeatherInfo(weather.code).icon}
+          <img className="map-image" src={weather.mapUrl} alt={`Map of ${weather.displayName}`} />
+
+          <div className="weather-summary">
+            <div className="icon">
+              {getWeatherInfo(weather.code).icon}
+            </div>
+            <div>
+              <p className="weather-text">{getWeatherInfo(weather.code).text}</p>
+              <div className="temperature-display">
+                {weather.temperature}°F
+              </div>
+            </div>
           </div>
 
-          <p>
-            {getWeatherInfo(weather.code).text}
-          </p>
-
-          <div className="temperature-display">
-            {weather.temperature}°F
+          <div className="detail-grid">
+            <div>
+              <p><strong>Humidity</strong></p>
+              <p>{weather.humidity}%</p>
+            </div>
+            <div>
+              <p><strong>Wind Speed</strong></p>
+              <p>{weather.wind} km/h</p>
+            </div>
+            <div>
+              <p><strong>Latitude</strong></p>
+              <p>{weather.latitude.toFixed(4)}</p>
+            </div>
+            <div>
+              <p><strong>Longitude</strong></p>
+              <p>{weather.longitude.toFixed(4)}</p>
+            </div>
+            <div>
+              <p><strong>Elevation</strong></p>
+              <p>{weather.elevation}</p>
+            </div>
+            <div>
+              <p><strong>Population</strong></p>
+              <p>{weather.population}</p>
+            </div>
+            <div>
+              <p><strong>Weather Code</strong></p>
+              <p>{weather.code}</p>
+            </div>
           </div>
-
-          <p>
-            <strong>Humidity:</strong> {weather.humidity}%
-          </p>
-
-          <p>
-            <strong>Wind Speed:</strong> {weather.wind} km/h
-          </p>
         </div>
       )}
     </div>

@@ -217,11 +217,22 @@ button:active {
 .subheading {
   color: rgba(227, 236, 255, 0.75);
   font-size: 0.97rem;
-  margin-bottom: 22px;
+  margin-bottom: 6px;
+}
+
+.timezone-meta {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  color: rgba(227, 236, 255, 0.82);
+  font-size: 0.95rem;
+  margin-bottom: 20px;
 }
 
 .map-image {
   width: 100%;
+  display: block;
   border-radius: 28px;
   border: 1px solid rgba(255, 255, 255, 0.12);
   margin-bottom: 24px;

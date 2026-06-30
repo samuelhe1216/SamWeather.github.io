@@ -1,6 +1,18 @@
 import { useState, useEffect } from "react";
 import "./App.css";
 import bgImage from "../image.jpg";
+import "leaflet/dist/leaflet.css";
+import L from "leaflet";
+import { MapContainer, TileLayer, Marker } from "react-leaflet";
+import iconUrl from "leaflet/dist/images/marker-icon.png";
+import iconRetinaUrl from "leaflet/dist/images/marker-icon-2x.png";
+import shadowUrl from "leaflet/dist/images/marker-shadow.png";
+
+L.Icon.Default.mergeOptions({
+  iconUrl,
+  iconRetinaUrl,
+  shadowUrl,
+});
 
 function getWeatherInfo(code) {
   if (code === 0) return { icon: "☀️", text: "Clear Sky" };
@@ -29,6 +41,29 @@ function formatLocation(location) {
     parts.push(location.country);
   }
   return parts.filter(Boolean).join(", ");
+}
+
+function formatLocalTime(dateTimeString, timeZone) {
+  if (!dateTimeString) {
+    return "Time unavailable";
+  }
+
+  const date = new Date(dateTimeString);
+
+  if (Number.isNaN(date.getTime())) {
+    return "Time unavailable";
+  }
+
+  return new Intl.DateTimeFormat("en", {
+    timeZone,
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  }).format(date);
 }
 
 function isCountryResult(location, query) {
@@ -102,10 +137,11 @@ function App() {
       }
 
       const weatherResponse = await fetch(
-        `https://api.open-meteo.com/v1/forecast?latitude=${location.latitude}&longitude=${location.longitude}&current=temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code`
+        `https://api.open-meteo.com/v1/forecast?latitude=${location.latitude}&longitude=${location.longitude}&current=temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code&timezone=auto`
       );
 
       const weatherData = await weatherResponse.json();
+      const resolvedTimeZone = weatherData.timezone || location.timezone || "UTC";
 
       setWeather({
         displayName: formatLocation(location),
@@ -113,7 +149,7 @@ function App() {
         countryCode: location.country_code,
         region: location.admin1 || location.country,
         locality: location.admin2 || location.admin1 || "N/A",
-        timezone: location.timezone || "Unknown",
+        timezone: resolvedTimeZone,
         latitude: location.latitude,
         longitude: location.longitude,
         elevation: location.elevation ?? "N/A",
@@ -123,6 +159,8 @@ function App() {
         humidity: weatherData.current.relative_humidity_2m,
         wind: weatherData.current.wind_speed_10m,
         code: weatherData.current.weather_code,
+        currentTime: weatherData.current.time,
+        currentTimeLabel: formatLocalTime(weatherData.current.time, resolvedTimeZone),
       });
     } catch {
       setError("Something went wrong.");
@@ -157,10 +195,32 @@ function App() {
           <h2>{weather.displayName}</h2>
           <p className="subheading">
             {weather.locality ? `${weather.locality}, ` : ""}
-            {weather.region} · {weather.country} · {weather.timezone}
+            {weather.region} · {weather.country}
+          </p>
+          <p className="timezone-meta">
+            <span>🕒 {weather.timezone}</span>
+            <span>• {weather.currentTimeLabel}</span>
           </p>
 
-          <img className="map-image" src={weather.mapUrl} alt={`Map of ${weather.displayName}`} />
+          <div className="leaflet-map-wrapper">
+            <MapContainer
+              center={[weather.latitude, weather.longitude]}
+              zoom={10}
+              style={{
+                height: "320px",
+                width: "100%",
+                borderRadius: "20px",
+              }}
+              scrollWheelZoom={false}
+              attributionControl={false}
+            >
+              <TileLayer
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                attribution="© OpenStreetMap contributors"
+              />
+              <Marker position={[weather.latitude, weather.longitude]} />
+            </MapContainer>
+          </div>
 
           <div className="weather-summary">
             <div className="icon">
@@ -209,5 +269,4 @@ function App() {
     </div>
   );
 }
-
 export default App;

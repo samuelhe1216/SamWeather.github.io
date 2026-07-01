@@ -15,11 +15,12 @@ body {
   min-height: 100vh;
   margin: 0;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
   overflow-x: hidden;
   position: relative;
   background: transparent;
+  padding: 0;
 }
 
 body::before,
@@ -49,11 +50,11 @@ body::after {
 
 .container {
   text-align: center;
-  width: min(100%, 680px);
-  max-width: 680px;
+  width: min(100%, 760px);
+  max-width: 760px;
   margin: 0 auto;
   min-height: 100vh;
-  padding: 40px 24px;
+  padding: clamp(16px, 4vw, 32px);
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -99,6 +100,7 @@ h1 {
   animation: slideUp 0.6s ease-out 0.1s both;
   width: 100%;
   justify-content: center;
+  flex-wrap: wrap;
 }
 
 @keyframes slideUp {
@@ -122,9 +124,13 @@ input {
   caret-color: #5d8dff;
   backdrop-filter: blur(18px);
   border: 1px solid rgba(255, 255, 255, 0.16);
-  transition: all 0.3s ease;
+  transition: all 0.3s ease, transform 0.2s ease;
   font-weight: 500;
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+}
+
+input:focus {
+  transform: translateY(-1px);
 }
 
 input::placeholder {
@@ -158,6 +164,11 @@ button {
   min-width: 120px;
 }
 
+button:disabled {
+  opacity: 0.8;
+  cursor: wait;
+}
+
 button:hover {
   transform: translateY(-2px);
   box-shadow: 0 18px 48px rgba(44, 103, 255, 0.34);
@@ -174,13 +185,19 @@ button:active {
   backdrop-filter: blur(24px);
   border: 1px solid rgba(120, 171, 255, 0.12);
   border-radius: 44px;
-  padding: 46px 38px;
+  padding: clamp(22px, 4.2vw, 38px);
   margin: 0 auto;
   width: 100%;
-  max-width: 560px;
+  max-width: 640px;
   box-shadow: 0 44px 140px rgba(6, 20, 75, 0.38);
   animation: slideUp 0.6s ease-out 0.2s both;
   overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 50px 150px rgba(6, 20, 75, 0.45);
 }
 
 .card::before {
@@ -230,13 +247,19 @@ button:active {
   margin-bottom: 20px;
 }
 
-.map-image {
+.leaflet-map-wrapper {
   width: 100%;
-  display: block;
-  border-radius: 28px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 24px;
+  overflow: hidden;
   margin-bottom: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+}
+
+.leaflet-map-wrapper .leaflet-container {
+  width: 100%;
+  height: 320px;
+  min-height: 240px;
 }
 
 .weather-summary {
@@ -322,6 +345,7 @@ button:active {
   font-size: 1.2rem;
   font-weight: 500;
   animation: pulse 1.5s ease-in-out infinite;
+  transition: opacity 0.25s ease;
 }
 
 @keyframes pulse {
@@ -338,7 +362,8 @@ button:active {
   font-weight: 600;
   font-size: 1.1rem;
   margin: 20px 0;
-  animation: shake 0.5s ease-in-out;
+  animation: shake 0.45s ease-in-out;
+  transition: transform 0.25s ease, opacity 0.25s ease;
 }
 
 @keyframes shake {
@@ -353,33 +378,79 @@ button:active {
   }
 }
 
-@media (max-width: 600px) {
+@media (max-width: 700px) {
   h1 {
-    font-size: 2rem;
+    font-size: 2.2rem;
   }
 
   .container {
     padding: 16px;
+    justify-content: flex-start;
+  }
+
+  .tagline {
+    font-size: 0.95rem;
   }
 
   .card {
-    padding: 30px 24px;
+    padding: 22px 18px;
     border-radius: 24px;
-  }
-
-  .temperature-display {
-    font-size: 3rem;
-  }
-
-  .icon {
-    font-size: 60px;
   }
 
   .search-wrapper {
     flex-direction: column;
+    align-items: stretch;
   }
 
-  button {
+  .search-wrapper input,
+  .search-wrapper button {
     width: 100%;
+  }
+
+  .weather-summary {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .temperature-display {
+    font-size: 3rem;
+    margin: 12px 0;
+  }
+
+  .icon {
+    font-size: 64px;
+    margin: 10px 0;
+  }
+
+  .detail-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .leaflet-map-wrapper .leaflet-container {
+    height: 260px;
+  }
+}
+
+@media (max-width: 480px) {
+  h1 {
+    font-size: 1.9rem;
+  }
+
+  .tagline {
+    font-size: 0.9rem;
+    line-height: 1.6;
+  }
+
+  .card h2 {
+    font-size: 1.6rem;
+  }
+
+  .timezone-meta {
+    font-size: 0.88rem;
+  }
+
+  .leaflet-map-wrapper .leaflet-container {
+    height: 220px;
+    min-height: 220px;
   }
 }

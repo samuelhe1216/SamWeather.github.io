@@ -172,19 +172,31 @@ function App() {
   return (
     <div className="container">
       <h1>Weather</h1>
-      <p className="tagline">Type a city and state to get the latest forecast.</p>
+      <p className="tagline">Search any city to view the latest forecast, local time, and map.</p>
 
-      <div className="search-wrapper">
+      <form
+        className="search-wrapper"
+        onSubmit={(event) => {
+          event.preventDefault();
+          getWeather();
+        }}
+      >
         <input
           type="text"
           placeholder="Enter a city, state or city and country"
           value={city}
-          onChange={(e) => setCity(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && getWeather()}
+          onChange={(event) => {
+            setCity(event.target.value);
+            if (error) setError("");
+          }}
+          disabled={loading}
+          aria-label="City search"
         />
 
-        <button onClick={getWeather}>Search</button>
-      </div>
+        <button type="submit" disabled={loading}>
+          {loading ? "Searching..." : "Search"}
+        </button>
+      </form>
 
       {loading && <p className="loading">Loading weather...</p>}
 

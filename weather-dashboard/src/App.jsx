@@ -81,6 +81,14 @@ function isCountryResult(location, query) {
   );
 }
 
+function isExactCityMatch(location, query) {
+  if (!(location?.name && query)) {
+    return false;
+  }
+
+  return location.name.trim().toLowerCase() === query.trim().toLowerCase();
+}
+
 function getMapUrl(latitude, longitude) {
   return `https://staticmap.openstreetmap.de/staticmap.php?center=${latitude},${longitude}&zoom=10&size=620x260&markers=${latitude},${longitude},red-pushpin`;
 }
@@ -130,7 +138,7 @@ function App() {
 
       const location = geoData.results[0];
 
-      if (isCountryResult(location, city)) {
+      if (!isExactCityMatch(location, city) || isCountryResult(location, city)) {
         setError("Must be a real CITY you donut");
         setLoading(false);
         return;

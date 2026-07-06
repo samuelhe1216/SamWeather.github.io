@@ -348,6 +348,82 @@ button:active {
   transition: opacity 0.25s ease;
 }
 
+.results-card {
+  width: 100%;
+  max-width: 640px;
+  background: rgba(6, 16, 48, 0.9);
+  border: 1px solid rgba(120, 171, 255, 0.16);
+  border-radius: 24px;
+  padding: 18px;
+  box-shadow: 0 20px 50px rgba(6, 20, 75, 0.25);
+  animation: slideUp 0.35s ease-out;
+}
+
+.results-title {
+  margin: 0 0 12px;
+  color: #a9c7ff;
+  font-weight: 700;
+  text-align: left;
+}
+
+.results-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.result-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.05);
+  color: #f5f9ff;
+  text-align: left;
+  box-shadow: none;
+  min-width: 0;
+  font-weight: 600;
+}
+
+.result-item:hover {
+  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 10px 24px rgba(6, 20, 75, 0.16);
+}
+
+.result-name {
+  color: #f5f9ff;
+  line-height: 1.4;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.page-button {
+  min-width: 40px;
+  padding: 8px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.06);
+  color: #dfeeff;
+  box-shadow: none;
+  font-weight: 700;
+}
+
+.page-button.active {
+  background: linear-gradient(135deg, #2c46b2 0%, #1e2c84 100%);
+  color: #fff;
+}
+
 @keyframes pulse {
   0%, 100% {
     opacity: 1;
@@ -452,5 +528,15 @@ button:active {
   .leaflet-map-wrapper .leaflet-container {
     height: 220px;
     min-height: 220px;
+  }
+
+  .result-item {
+    padding: 11px 12px;
+    font-size: 0.95rem;
+  }
+
+  .page-button {
+    min-width: 36px;
+    padding: 7px 9px;
   }
 }

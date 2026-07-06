@@ -93,11 +93,28 @@ function getMapUrl(latitude, longitude) {
   return `https://staticmap.openstreetmap.de/staticmap.php?center=${latitude},${longitude}&zoom=10&size=620x260&markers=${latitude},${longitude},red-pushpin`;
 }
 
+function getLocationLabel(location) {
+  const parts = [location.name];
+
+  if (location.admin1) {
+    parts.push(location.admin1);
+  }
+
+  if (location.country) {
+    parts.push(location.country);
+  }
+
+  return parts.filter(Boolean).join(", ");
+}
+
 function App() {
   const [city, setCity] = useState("");
   const [weather, setWeather] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [searchResults, setSearchResults] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const resultsPerPage = 6;
 
   useEffect(() => {
     const overlay = "linear-gradient(180deg, rgba(10, 18, 45, 0.72), rgba(14, 28, 70, 0.72))";
@@ -122,28 +139,67 @@ function App() {
     setLoading(true);
     setError("");
     setWeather(null);
+    setSearchResults([]);
+    setCurrentPage(1);
 
     try {
       const geoResponse = await fetch(
-        `https://geocoding-api.open-meteo.com/v1/search?name=${city}&count=1`
+        `https://geocoding-api.open-meteo.com/v1/search?name=${city}&count=10`
       );
 
       const geoData = await geoResponse.json();
 
-      if (!geoData.results) {
+      if (!geoData.results || geoData.results.length === 0) {
         setError("Must be a real CITY you donut");
         setLoading(false);
         return;
       }
 
-      const location = geoData.results[0];
+      const exactMatches = geoData.results.filter((location) => isExactCityMatch(location, city));
 
-      if (!isExactCityMatch(location, city) || isCountryResult(location, city)) {
-        setError("Must be a real CITY you donut");
+      if (exactMatches.length === 1) {
+        const location = exactMatches[0];
+        await loadWeatherForLocation(location);
+        return;
+      }
+
+      if (exactMatches.length > 1) {
+        setSearchResults(exactMatches);
+        setCurrentPage(1);
         setLoading(false);
         return;
       }
 
+      if (geoData.results.length === 1) {
+        const location = geoData.results[0];
+
+        if (isCountryResult(location, city)) {
+          setError("Must be a real CITY you donut");
+          setLoading(false);
+          return;
+        }
+
+        await loadWeatherForLocation(location);
+        return;
+      }
+
+      setSearchResults(geoData.results);
+      setCurrentPage(1);
+      setLoading(false);
+      return;
+    } catch {
+      setError("Something went wrong.");
+    }
+
+    setLoading(false);
+  }
+
+  function goToPage(page) {
+    setCurrentPage(page);
+  }
+
+  async function loadWeatherForLocation(location) {
+    try {
       const weatherResponse = await fetch(
         `https://api.open-meteo.com/v1/forecast?latitude=${location.latitude}&longitude=${location.longitude}&current=temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code&timezone=auto`
       );
@@ -209,6 +265,46 @@ function App() {
       {loading && <p className="loading">Loading weather...</p>}
 
       {error && <p className="error">{error}</p>}
+
+      {searchResults.length > 0 && (
+        <div className="results-card">
+          <p className="results-title">Choose a city</p>
+          <div className="results-list">
+            {searchResults
+              .slice((currentPage - 1) * resultsPerPage, currentPage * resultsPerPage)
+              .map((location) => (
+                <button
+                  key={`${location.latitude}-${location.longitude}-${location.name}`}
+                  type="button"
+                  className="result-item"
+                  onClick={() => {
+                    setSearchResults([]);
+                    setCurrentPage(1);
+                    setLoading(true);
+                    loadWeatherForLocation(location);
+                  }}
+                >
+                  <span className="result-name">{getLocationLabel(location)}</span>
+                </button>
+              ))}
+          </div>
+
+          {Math.ceil(searchResults.length / resultsPerPage) > 1 && (
+            <div className="pagination">
+              {Array.from({ length: Math.ceil(searchResults.length / resultsPerPage) }, (_, index) => index + 1).map((page) => (
+                <button
+                  key={page}
+                  type="button"
+                  className={`page-button ${currentPage === page ? "active" : ""}`}
+                  onClick={() => goToPage(page)}
+                >
+                  {page}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {weather && (
         <div className="card">
